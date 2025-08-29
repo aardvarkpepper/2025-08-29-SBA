@@ -1,18 +1,23 @@
 const { Schema, model } = require('mongoose');
 const bcrypt = require('bcrypt');
- 
+
+// new Schema, if deconstructed.  As it is not, mongoose.Schema.
 const userSchema = new Schema({
   username: {
     type: String,
-    required: true,
-    unique: true,
+    required: [true, 'Please enter a username.'],
+    unique: [true, 'This username has already been taken.'],
     trim: true,
   },
-  email: {
+  email: { // the user may have one of password or githubId, or both.  email links the two, though username is also unique - so ordered by instructions in SBA (skills based assessment).
     type: String,
     required: true,
     unique: true,
     match: [/.+@.+\..+/, 'Must use a valid email address'],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
   password: {
     type: String,
@@ -23,22 +28,23 @@ const userSchema = new Schema({
     minlength: 1, // presumably github requires at least one character
   },
 });
- 
+
 // hash user password
-userSchema.pre('save', async function (next) {
+// may pop this function somewhere else then import it?  What's standard practice?
+userSchema.pre('save', async function (next) { // anonymous function not used as 'this' required.
   if (this.isNew || this.isModified('password')) {
     const saltRounds = 10;
     this.password = await bcrypt.hash(this.password, saltRounds);
   }
- 
+
   next();
 });
- 
+
 // custom method to compare and validate password for logging in
-userSchema.methods.isCorrectPassword = async function (password) {
+userSchema.methods.isCorrectPassword = async function (password) { // not anon function, as using this.  Here, this will reference user document, but not if anon.
   return bcrypt.compare(password, this.password);
 };
- 
+
 const User = model('User', userSchema);
- 
+
 module.exports = User;

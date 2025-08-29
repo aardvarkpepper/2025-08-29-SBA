@@ -1,15 +1,15 @@
 const { Schema, model } = require('mongoose');
-const User = require('./User');
+// const User = require('./User');
 
 const noteSchema = new Schema({
   title: {
     type: String,
-    required: true,
+    required: [true, 'Please enter a note title.'],
     trim: true,
   },
   content: {
     type: String,
-    required: true,
+    required: [true, 'Please enter note content.']
   },
   createdAt: {
     type: Date,
@@ -18,7 +18,7 @@ const noteSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     //https://mongoosejs.com/docs/schematypes.html#objectids
-    // for user's ObjectId.
+    // for user's ObjectId - explicitly, ._id, the unique ID assigned by MongoDB.
     ref: 'User',
     required: true,
   }
